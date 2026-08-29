@@ -9,7 +9,7 @@ langchain
 langchain-core
 langchain-community
 langchain-openai
-langchain-pinecone>=0.2.0
+langchain-pinecone
 langchain-tavily
 langchain-text-splitters
 langchain-classic
