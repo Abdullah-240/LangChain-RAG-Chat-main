@@ -31,6 +31,9 @@ def log_warning(message: str):
     print(f"{Colors.YELLOW}⚠️  {message}{Colors.END}")
 
 
+log_warn = log_warning
+
+
 def log_header(message: str):
     """Log header message with emphasis"""
     print(f"\n{Colors.BOLD}{Colors.PURPLE}{'='*60}{Colors.END}")

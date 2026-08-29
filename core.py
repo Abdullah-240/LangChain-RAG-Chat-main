@@ -142,7 +142,7 @@ def run_llm_from_docs(query: str, chat_history: List[Dict[str, Any]] = []):
         )
         return result
     except Exception as e:
-        log_warn(f"Live RAG invocation fallback: {e}")
+        log_warning(f"Live RAG invocation fallback: {e}")
         return smart_fallback_answer(query, chat_history)
 
 
