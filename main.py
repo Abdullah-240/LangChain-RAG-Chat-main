@@ -18,12 +18,7 @@ except ImportError:
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev-secret")
 
 
-CORS(
-    app,
-    origins=["http://localhost:5173", "http://localhost:5174", "*"],
-    methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"],
-)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 @app.route("/", methods=["GET"])
