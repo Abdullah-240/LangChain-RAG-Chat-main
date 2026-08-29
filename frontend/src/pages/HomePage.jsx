@@ -27,7 +27,8 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/answer`, {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const res = await fetch(`${apiBase}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

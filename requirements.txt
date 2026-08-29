@@ -2,6 +2,7 @@
 flask
 flask-cors
 python-dotenv
+gunicorn
 
 # --- LangChain Core + Integrations ---
 langchain
