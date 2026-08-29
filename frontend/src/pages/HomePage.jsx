@@ -27,7 +27,8 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const apiBase = import.meta.env.VITE_API_BASE_URL || (isLocal ? "http://localhost:5000" : "/api");
       const res = await fetch(`${apiBase}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,6 +62,14 @@ export default function Chat() {
       }
       setMessages(uiHistory);
     } catch (err) {
+      const isVercelNoBackend = !import.meta.env.VITE_API_BASE_URL && window.location.hostname.includes("vercel.app");
+      let errorMsg = err.message || "Failed to reach backend server.";
+      if (isVercelNoBackend) {
+        errorMsg = "⚠️ **Vercel Backend Configuration Needed**:\n\nPlease add your Render backend URL in Vercel Environment Variables:\n- `VITE_API_BASE_URL` = `https://your-render-backend.onrender.com`";
+      } else if (err.name === "TypeError" || err.message.includes("fetch")) {
+        errorMsg = "⚠️ **Connection Error**: Unable to reach backend server. Make sure the Flask backend (`python main.py`) is running on `http://localhost:5000`.";
+      }
+
       setMessages((m) => [
         ...m,
         {
@@ -69,7 +78,7 @@ export default function Chat() {
         },
         {
           role: "ai",
-          content: "⚠️ **Connection Error**: Unable to reach backend server on `http://localhost:5000`. Please make sure the Flask backend is active.",
+          content: errorMsg,
           provenance: "model_only",
           model_name: "System",
         },
