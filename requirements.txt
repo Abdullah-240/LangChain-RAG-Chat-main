@@ -1,0 +1,23 @@
+# --- Backend Web Framework ---
+flask
+flask-cors
+python-dotenv
+
+# --- LangChain Core + Integrations ---
+langchain
+langchain-core
+langchain-community
+langchain-openai
+langchain-pinecone>=0.2.0
+langchain-tavily
+langchain-text-splitters
+langchain-classic
+# --- External Dependencies ---
+openai
+pinecone-client
+tavily-python
+
+# --- Utilities ---
+certifi
+coloredlogs
+ 
