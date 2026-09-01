@@ -28,7 +28,7 @@ export default function Chat() {
 
     try {
       const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const apiBase = import.meta.env.VITE_API_BASE_URL || (isLocal ? "http://localhost:5000" : "/api");
+      const apiBase = import.meta.env.VITE_API_BASE_URL || (isLocal ? "http://localhost:5000" : "https://langchain-rag-backend-4od8.onrender.com");
       const res = await fetch(`${apiBase}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
