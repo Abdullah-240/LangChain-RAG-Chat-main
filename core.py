@@ -81,11 +81,32 @@ KNOWLEDGE_BASE = [
 ]
 
 
+GREETINGS = ["hi", "hello", "hey", "assalam", "salam", "hola", "greetings", "howdy", "wassup", "who are you", "what can you do"]
+
+
 def smart_fallback_answer(query: str, chat_history: List[Any] = []):
-    q_lower = query.lower()
+    q_clean = query.strip().lower()
     
+    # 1. Natural greeting handling
+    if any(g in q_clean for g in GREETINGS) or len(q_clean) <= 3:
+        greeting_resp = (
+            "### 👋 Hello! Welcome to LangChain Neon RAG 2.0\n\n"
+            "I am your AI Assistant powered by **Google Gemini 1.5 Flash** and **FAISS Vector Database**.\n\n"
+            "How can I assist you today? You can ask me about:\n"
+            "- ⚡ **LangChain Retrievers & Chains**\n"
+            "- 🌲 **FAISS Vector Store & Gemini Embeddings**\n"
+            "- 🧠 **Autonomous AI Agents & Tools**\n"
+            "- 📚 **History-Aware RAG Pipelines**\n\n"
+            "*Try typing a question or clicking one of the prompt chips below!*"
+        )
+        return {
+            "answer": greeting_resp,
+            "context": [],
+        }
+
+    # 2. Match keyword in knowledge base
     for item in KNOWLEDGE_BASE:
-        if any(kw in q_lower for kw in item["keywords"]):
+        if any(kw in q_clean for kw in item["keywords"]):
             class MockDoc:
                 def __init__(self, src):
                     self.metadata = {"source": src}
@@ -95,7 +116,20 @@ def smart_fallback_answer(query: str, chat_history: List[Any] = []):
                 "context": [MockDoc(item["source"])],
             }
 
-    answer_text = f"### 💡 Google Gemini Assistant Response\n\nYou asked: **\"{query}\"**\n\nThis system uses **Google Gemini 1.5 Flash** and a local **FAISS Vector Database** to answer documentation queries.\n\n```python\n# Example Gemini Code\nfrom langchain_google_genai import ChatGoogleGenerativeAI\nllm = ChatGoogleGenerativeAI(model=\"gemini-1.5-flash\")\nresponse = llm.invoke(\"{query}\")\nprint(response.content)\n```\n\n*Note: To enable live Google Gemini API calls, set your `GOOGLE_API_KEY` in environment variables.*"
+    # 3. Comprehensive dynamic response
+    answer_text = (
+        f"### 🤖 Google Gemini Assistant Response\n\n"
+        f"**Question:** \"{query}\"\n\n"
+        f"LangChain is a framework for building context-aware reasoning applications powered by LLMs like **Google Gemini** and **FAISS** vector store.\n\n"
+        f"```python\n"
+        f"# Gemini 1.5 Flash Example\n"
+        f"from langchain_google_genai import ChatGoogleGenerativeAI\n\n"
+        f"llm = ChatGoogleGenerativeAI(model=\"gemini-1.5-flash\")\n"
+        f"response = llm.invoke(\"{query}\")\n"
+        f"print(response.content)\n"
+        f"```\n\n"
+        f"*Tip: To activate live Google Gemini API calls, set your real `GOOGLE_API_KEY` in the `.env` file.*"
+    )
     
     return {
         "answer": answer_text,
