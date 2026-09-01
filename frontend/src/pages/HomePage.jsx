@@ -64,7 +64,7 @@ export default function Chat() {
     } catch (err) {
       let errorMsg = err.message || "Failed to reach backend server.";
       if (err.name === "TypeError" || err.message.includes("fetch")) {
-        errorMsg = "⚠️ **Connection Error**: Unable to reach backend server on `https://langchain-rag-backend-4od8.onrender.com`. Please check if the Render service is awake and active.";
+        errorMsg = "⚠️ **Connection Error**: Unable to reach backend server on `https://langchain-rag-chat-main.onrender.com`. Please check if the Render service is awake and active.";
       }
 
       setMessages((m) => [
