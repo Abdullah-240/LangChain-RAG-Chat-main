@@ -27,7 +27,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || "https://langchain-rag-backend-4od8.onrender.com";
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "";
       const res = await fetch(`${apiBase}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
