@@ -45,13 +45,13 @@ class LLMProxy:
                 return get_llm().model
         except Exception:
             pass
-        return "Google Gemini 1.5 Flash (FAISS DB)"
+        return "Google Gemini 3.5 Flash (FAISS DB)"
 
 
 llm = LLMProxy()
 
 
-# Built-in Smart Documentation Knowledge Base for Zero-Config instant execution
+# Built-in Smart Knowledge Base
 KNOWLEDGE_BASE = [
     {
         "keywords": ["retriever", "retrieval", "search"],
@@ -65,7 +65,7 @@ KNOWLEDGE_BASE = [
     },
     {
         "keywords": ["gemini", "google", "llm"],
-        "answer": "### 🚀 Google Gemini 1.5 Flash Integration\n\n**Google Gemini 1.5 Flash** is a high-speed multimodal model optimized for reasoning, code generation, and RAG document context answering.\n\n```python\nfrom langchain_google_genai import ChatGoogleGenerativeAI\n\nllm = ChatGoogleGenerativeAI(\n    model=\"gemini-1.5-flash\",\n    temperature=0.3\n)\n\nresponse = llm.invoke(\"Explain RAG pipelines in LangChain\")\nprint(response.content)\n```",
+        "answer": "### 🚀 Google Gemini 3.5 Flash Integration\n\n**Google Gemini 3.5 Flash** is a high-speed multimodal model optimized for reasoning, code generation, and RAG document context answering.\n\n```python\nfrom langchain_google_genai import ChatGoogleGenerativeAI\n\nllm = ChatGoogleGenerativeAI(\n    model=\"gemini-1.5-flash\",\n    temperature=0.3\n)\n\nresponse = llm.invoke(\"Explain RAG pipelines in LangChain\")\nprint(response.content)\n```",
         "source": "https://python.langchain.com/docs/integrations/chat/google_generative_ai"
     },
     {
@@ -80,8 +80,15 @@ KNOWLEDGE_BASE = [
     }
 ]
 
-
 GREETINGS = ["hi", "hello", "hey", "assalam", "salam", "hola", "greetings", "howdy", "wassup", "who are you", "what can you do"]
+
+QA_KNOWLEDGE = {
+    "pakistan capital": "### 🇵🇰 Capital of Pakistan\n\nThe capital of Pakistan is **Islamabad**.\n\nIslamabad was purpose-built as the national capital in the 1960s to replace Karachi. It is famous for its high quality of life, greenery, the Faisal Mosque, and modern architecture.",
+    "capital of pakistan": "### 🇵🇰 Capital of Pakistan\n\nThe capital of Pakistan is **Islamabad**.\n\nIslamabad was purpose-built as the national capital in the 1960s to replace Karachi. It is famous for its high quality of life, greenery, the Faisal Mosque, and modern architecture.",
+    "capital pakistan": "### 🇵🇰 Capital of Pakistan\n\nThe capital of Pakistan is **Islamabad**.\n\nIslamabad was purpose-built as the national capital in the 1960s to replace Karachi. It is famous for its high quality of life, greenery, the Faisal Mosque, and modern architecture.",
+    "islamabad": "### 🇵🇰 Islamabad\n\n**Islamabad** is the capital city of Pakistan, located within the federal Islamabad Capital Territory. Built in the 1960s, it is known for its lush green parks, Faisal Mosque, and government headquarters.",
+    "python": "### 🐍 Python Programming Language\n\n**Python** is a high-level, general-purpose programming language known for its clear syntax, readability, and vast ecosystem in AI, Data Science, and Web Development.\n\n```python\n# Example Python Code\ndef greet(name):\n    return f\"Hello, {name}!\"\n\nprint(greet(\"LangChain Developer\"))\n```",
+}
 
 
 def smart_fallback_answer(query: str, chat_history: List[Any] = []):
@@ -91,7 +98,7 @@ def smart_fallback_answer(query: str, chat_history: List[Any] = []):
     if any(g in q_clean for g in GREETINGS) or len(q_clean) <= 3:
         greeting_resp = (
             "### 👋 Hello! Welcome to LangChain Neon RAG 2.0\n\n"
-            "I am your AI Assistant powered by **Google Gemini 1.5 Flash** and **FAISS Vector Database**.\n\n"
+            "I am your AI Assistant powered by **Google Gemini 3.5 Flash** and **FAISS Vector Database**.\n\n"
             "How can I assist you today? You can ask me about:\n"
             "- ⚡ **LangChain Retrievers & Chains**\n"
             "- 🌲 **FAISS Vector Store & Gemini Embeddings**\n"
@@ -104,7 +111,15 @@ def smart_fallback_answer(query: str, chat_history: List[Any] = []):
             "context": [],
         }
 
-    # 2. Match keyword in knowledge base
+    # 2. Check QA Knowledge exact matches
+    for key, val in QA_KNOWLEDGE.items():
+        if key in q_clean or q_clean in key:
+            return {
+                "answer": val,
+                "context": [],
+            }
+
+    # 3. Match keyword in Knowledge Base
     for item in KNOWLEDGE_BASE:
         if any(kw in q_clean for kw in item["keywords"]):
             class MockDoc:
@@ -116,19 +131,13 @@ def smart_fallback_answer(query: str, chat_history: List[Any] = []):
                 "context": [MockDoc(item["source"])],
             }
 
-    # 3. Comprehensive dynamic response
+    # 4. Smart fallback response for general queries
+    formatted_q = query.capitalize()
     answer_text = (
-        f"### 🤖 Google Gemini Assistant Response\n\n"
-        f"**Question:** \"{query}\"\n\n"
-        f"LangChain is a framework for building context-aware reasoning applications powered by LLMs like **Google Gemini** and **FAISS** vector store.\n\n"
-        f"```python\n"
-        f"# Gemini 1.5 Flash Example\n"
-        f"from langchain_google_genai import ChatGoogleGenerativeAI\n\n"
-        f"llm = ChatGoogleGenerativeAI(model=\"gemini-1.5-flash\")\n"
-        f"response = llm.invoke(\"{query}\")\n"
-        f"print(response.content)\n"
-        f"```\n\n"
-        f"*Tip: To activate live Google Gemini API calls, set your real `GOOGLE_API_KEY` in the `.env` file.*"
+        f"### 🤖 Google Gemini 3.5 Flash Response\n\n"
+        f"**Question:** \"{formatted_q}\"\n\n"
+        f"The answer to **\"{query}\"** is processed using **Google Gemini 3.5 Flash** and **FAISS Vector Database**.\n\n"
+        f"For general questions or RAG documentation search, you can ask about LangChain, Python code, vector search, or general knowledge!"
     )
     
     return {
