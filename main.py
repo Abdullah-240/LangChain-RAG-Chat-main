@@ -64,8 +64,8 @@ def answer():
         model_name = getattr(llm, "model_name", "gpt-4")
     except Exception as e:
         err_msg = str(e)
-        if "API key" in err_msg or "Unauthorized" in err_msg or "401" in err_msg or "api_key" in err_msg or "APIKey" in err_msg:
-            ans = "⚠️ **API Key Configuration Needed**\n\nPlease set your valid credentials in the `.env` file in the project root:\n\n```env\nOPENAI_API_KEY=your_openai_api_key\nPINECONE_API_KEY=your_pinecone_api_key\nINDEX_NAME=langchain-doc-index\nTAVILY_API_KEY=your_tavily_api_key\n```"
+        if "API key" in err_msg or "Unauthorized" in err_msg or "401" in err_msg or "api_key" in err_msg or "APIKey" in err_msg or "INVALID_ARGUMENT" in err_msg:
+            ans = "⚠️ **Google Gemini API Key Configuration Needed**\n\nPlease set your valid credentials in the `.env` file in the project root:\n\n```env\nGOOGLE_API_KEY=your_gemini_api_key_here\nTAVILY_API_KEY=your_tavily_api_key_here\n```"
             provenance = "model_only"
             sources = []
             model_name = "System"

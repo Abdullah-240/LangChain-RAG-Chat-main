@@ -15,7 +15,7 @@ export default function Chat() {
 
   const quickPrompts = [
     { label: "⚡ What is a Retriever in LangChain?", text: "What is a retriever in LangChain?" },
-    { label: "🌲 How does Pinecone vector store work?", text: "How does Pinecone vector store work in LangChain RAG?" },
+    { label: "🌲 How does FAISS vector database work?", text: "How does FAISS vector database work in LangChain RAG?" },
     { label: "🧠 Explain LangChain Agents", text: "What are LangChain Agents and tools?" },
     { label: "📚 What is history-aware retrieval?", text: "Explain history-aware retrieval in documentation chatbot." },
   ];
@@ -319,7 +319,7 @@ export default function Chat() {
             </button>
           </form>
           <div className="mt-2 text-center text-[10px] font-mono text-slate-500">
-            LANGCHAIN ECOSYSTEM RAG • PINECONE VECTOR SEARCH • OPENAI EMBEDDINGS
+            LANGCHAIN ECOSYSTEM RAG • FAISS VECTOR DB • GOOGLE GEMINI
           </div>
         </div>
 

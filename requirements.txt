@@ -8,17 +8,16 @@ gunicorn
 langchain
 langchain-core
 langchain-community
-langchain-openai
-langchain-pinecone
+langchain-google-genai
 langchain-tavily
 langchain-text-splitters
 langchain-classic
-# --- External Dependencies ---
-openai
-pinecone-client
+
+# --- External Dependencies & Vector DB ---
+google-generativeai
+faiss-cpu
 tavily-python
 
 # --- Utilities ---
 certifi
 coloredlogs
- 

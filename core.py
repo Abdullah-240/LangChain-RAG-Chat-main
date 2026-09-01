@@ -9,9 +9,9 @@ from langchain_classic.chains.history_aware_retriever import (
     create_history_aware_retriever,
 )
 from langchain_classic.chains.retrieval import create_retrieval_chain
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-from ingestion import get_vectorstore, vectorstore
+from ingestion import get_vectorstore, vectorstore, get_embeddings
 from logger import *
 
 load_dotenv()
@@ -19,12 +19,19 @@ load_dotenv()
 _llm = None
 
 
+def is_api_key_valid():
+    key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+    return bool(key and not key.startswith("your_") and len(key) > 15)
+
+
 def get_llm():
     global _llm
     if _llm is None:
-        _llm = ChatOpenAI(
-            model="gpt-4",
-            streaming=True,
+        api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "dummy"
+        _llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",
+            temperature=0.3,
+            google_api_key=api_key,
         )
     return _llm
 
@@ -34,46 +41,41 @@ class LLMProxy:
     def model_name(self):
         try:
             if is_api_key_valid():
-                return get_llm().model_name
+                return get_llm().model
         except Exception:
             pass
-        return "LangChain Neural Engine v2.0"
+        return "Google Gemini 1.5 Flash (FAISS DB)"
 
 
 llm = LLMProxy()
-
-
-def is_api_key_valid():
-    key = os.environ.get("OPENAI_API_KEY", "")
-    return bool(key and not key.startswith("your_") and len(key) > 15)
 
 
 # Built-in Smart Documentation Knowledge Base for Zero-Config instant execution
 KNOWLEDGE_BASE = [
     {
         "keywords": ["retriever", "retrieval", "search"],
-        "answer": "### ⚡ LangChain Retrievers\n\nA **Retriever** in LangChain is an interface that returns documents given an un-structured query. It is more general than a vector store. A retriever does not need to be able to store documents, only to return (or retrieve) them.\n\n```python\nfrom langchain_community.vectorstores import Pinecone\n\n# Convert vector store to retriever\nretriever = vectorstore.as_retriever(\n    search_type=\"similarity\",\n    search_kwargs={\"k\": 5}\n)\n\ndocs = retriever.invoke(\"What is RAG?\")\n```\n\n#### Key Features:\n- **VectorStoreRetriever**: Standard retriever backed by vector embeddings.\n- **Contextual Compression**: Filters out irrelevant text chunks.\n- **MultiQueryRetriever**: Generates multiple queries to improve recall.",
+        "answer": "### ⚡ LangChain Retrievers with FAISS\n\nA **Retriever** in LangChain is an interface that returns documents given an unstructured query. With **FAISS** (Facebook AI Similarity Search), similarity searches execute locally in milliseconds.\n\n```python\nfrom langchain_community.vectorstores import FAISS\nfrom langchain_google_genai import GoogleGenerativeAIEmbeddings\n\nembeddings = GoogleGenerativeAIEmbeddings(model=\"models/text-embedding-004\")\nvectorstore = FAISS.load_local(\"faiss_index\", embeddings, allow_dangerous_deserialization=True)\nretriever = vectorstore.as_retriever(search_kwargs={\"k\": 5})\n\ndocs = retriever.invoke(\"What is RAG?\")\n```",
         "source": "https://python.langchain.com/docs/concepts/retrievers"
     },
     {
-        "keywords": ["pinecone", "vector", "embedding", "index"],
-        "answer": "### 🌲 Pinecone Vector Store in LangChain\n\n**Pinecone** is a cloud-native vector database designed for high-performance similarity search. In LangChain RAG pipelines, text chunks are converted into dense vector embeddings using OpenAI (`text-embedding-3-small`) and stored in Pinecone.\n\n```python\nfrom langchain_pinecone import PineconeVectorStore\nfrom langchain_openai import OpenAIEmbeddings\n\ned = OpenAIEmbeddings(model=\"text-embedding-3-small\")\nvs = PineconeVectorStore(index_name=\"langchain-doc-index\", embedding=ed)\n```\n\n#### Dimensions & Metric:\n- **Dimension:** 1536 (for `text-embedding-3-small`)\n- **Metric:** Cosine similarity",
-        "source": "https://python.langchain.com/docs/integrations/vectorstores/pinecone"
+        "keywords": ["faiss", "vector", "embedding", "index"],
+        "answer": "### 🌲 FAISS Vector Database & Gemini Embeddings\n\n**FAISS** (Facebook AI Similarity Search) is an open-source library for efficient dense vector similarity search. In this pipeline, text chunks are embedded using Google Gemini embeddings (`models/text-embedding-004`) and stored in a local FAISS index.\n\n```python\nfrom langchain_community.vectorstores import FAISS\nfrom langchain_google_genai import GoogleGenerativeAIEmbeddings\n\nembeddings = GoogleGenerativeAIEmbeddings(model=\"models/text-embedding-004\")\nvs = FAISS.from_documents(docs, embeddings)\nvs.save_local(\"faiss_index\")\n```\n\n#### Key Advantages:\n- **Speed:** Instant local vector search without network latency.\n- **Zero Cost:** Runs locally on disk without third-party vector cloud hosting.",
+        "source": "https://python.langchain.com/docs/integrations/vectorstores/faiss"
+    },
+    {
+        "keywords": ["gemini", "google", "llm"],
+        "answer": "### 🚀 Google Gemini 1.5 Flash Integration\n\n**Google Gemini 1.5 Flash** is a high-speed multimodal model optimized for reasoning, code generation, and RAG document context answering.\n\n```python\nfrom langchain_google_genai import ChatGoogleGenerativeAI\n\nllm = ChatGoogleGenerativeAI(\n    model=\"gemini-1.5-flash\",\n    temperature=0.3\n)\n\nresponse = llm.invoke(\"Explain RAG pipelines in LangChain\")\nprint(response.content)\n```",
+        "source": "https://python.langchain.com/docs/integrations/chat/google_generative_ai"
     },
     {
         "keywords": ["agent", "agents", "tool", "tools"],
-        "answer": "### 🧠 LangChain Agents & Tools\n\nAn **Agent** uses an LLM as a reasoning engine to determine which actions to take and in what order. Unlike static chains, agents dynamically decide which tools to execute based on user input.\n\n```python\nfrom langchain.agents import create_openai_functions_agent, AgentExecutor\nfrom langchain_community.tools.tavily_search import TavilySearchResults\n\ntools = [TavilySearchResults()]\nagent = create_openai_functions_agent(llm, tools, prompt)\nagent_executor = AgentExecutor(agent=agent, tools=tools)\n```\n\n- **Tools:** Functions the agent can invoke (Search, SQL, Calculators).\n- **AgentExecutor:** Runtime loop that manages execution and error handling.",
+        "answer": "### 🧠 LangChain Agents & Tools\n\nAn **Agent** uses Google Gemini as a reasoning engine to decide actions and tool executions dynamically based on user input.\n\n```python\nfrom langchain.agents import create_tool_calling_agent, AgentExecutor\nfrom langchain_google_genai import ChatGoogleGenerativeAI\n\nllm = ChatGoogleGenerativeAI(model=\"gemini-1.5-flash\")\nagent = create_tool_calling_agent(llm, tools, prompt)\nagent_executor = AgentExecutor(agent=agent, tools=tools)\n```",
         "source": "https://python.langchain.com/docs/concepts/agents"
     },
     {
         "keywords": ["history", "rephrase", "memory", "context"],
-        "answer": "### 📚 History-Aware Retrieval in RAG\n\n**History-aware retrieval** reformulates the user's latest question by incorporating conversational history before performing vector store lookups. This ensures follow-up questions like *\"How do I configure it?\"* correctly reference previous topics.\n\n```python\nfrom langchain_classic.chains.history_aware_retriever import create_history_aware_retriever\n\nhistory_aware_retriever = create_history_aware_retriever(\n    llm=llm,\n    retriever=retriever,\n    prompt=rephrase_prompt\n)\n```",
+        "answer": "### 📚 History-Aware Retrieval in RAG\n\n**History-aware retrieval** incorporates conversational history before querying the FAISS vector database to ensure context continuity.\n\n```python\nfrom langchain_classic.chains.history_aware_retriever import create_history_aware_retriever\n\nhistory_aware_retriever = create_history_aware_retriever(\n    llm=llm,\n    retriever=retriever,\n    prompt=rephrase_prompt\n)\n```",
         "source": "https://python.langchain.com/docs/how_to/qa_chat_history_how_to"
-    },
-    {
-        "keywords": ["langchain", "rag", "chain", "pipeline"],
-        "answer": "### 🚀 LangChain Ecosystem & RAG Architecture\n\n**LangChain** is a framework for developing applications powered by large language models (LLMs). The RAG (Retrieval-Augmented Generation) pipeline consists of:\n\n1. **Document Ingestion:** Crawling docs & chunking text.\n2. **Vector Storage:** Generating embeddings and indexing in Pinecone.\n3. **Retrieval:** Searching relevant context based on user query.\n4. **Generation:** Augmenting LLM prompt with retrieved context.",
-        "source": "https://python.langchain.com/docs/introduction"
     }
 ]
 
@@ -81,7 +83,6 @@ KNOWLEDGE_BASE = [
 def smart_fallback_answer(query: str, chat_history: List[Any] = []):
     q_lower = query.lower()
     
-    # Match keyword in knowledge base
     for item in KNOWLEDGE_BASE:
         if any(kw in q_lower for kw in item["keywords"]):
             class MockDoc:
@@ -93,8 +94,7 @@ def smart_fallback_answer(query: str, chat_history: List[Any] = []):
                 "context": [MockDoc(item["source"])],
             }
 
-    # General smart response for non-keyword queries
-    answer_text = f"### 💡 LangChain Assistant Response\n\nYou asked: **\"{query}\"**\n\nLangChain is a framework for building context-aware reasoning applications powered by LLMs. You can query documentation, build custom RAG pipelines, or construct autonomous agents.\n\n```python\n# Quick Example\nfrom langchain_openai import ChatOpenAI\nllm = ChatOpenAI(model=\"gpt-4\")\nresponse = llm.invoke(\"{query}\")\nprint(response.content)\n```\n\n*Note: To enable live GPT-4 and Pinecone indexing, add your `OPENAI_API_KEY` and `PINECONE_API_KEY` in environment variables.*"
+    answer_text = f"### 💡 Google Gemini Assistant Response\n\nYou asked: **\"{query}\"**\n\nThis system uses **Google Gemini 1.5 Flash** and a local **FAISS Vector Database** to answer documentation queries.\n\n```python\n# Example Gemini Code\nfrom langchain_google_genai import ChatGoogleGenerativeAI\nllm = ChatGoogleGenerativeAI(model=\"gemini-1.5-flash\")\nresponse = llm.invoke(\"{query}\")\nprint(response.content)\n```\n\n*Note: To enable live Google Gemini API calls, set your `GOOGLE_API_KEY` in environment variables.*"
     
     return {
         "answer": answer_text,
@@ -124,8 +124,8 @@ def run_llm_from_docs(query: str, chat_history: List[Dict[str, Any]] = []):
         combine_docs_chain = create_stuff_documents_chain(active_llm, retrieval_qa_chat_prompt)
 
         retriever = get_vectorstore().as_retriever(
-            search_type="similarity_score_threshold",
-            search_kwargs={"k": 15, "score_threshold": 0.75},
+            search_type="similarity",
+            search_kwargs={"k": 5},
         )
         history_aware_retriever = create_history_aware_retriever(
             llm=active_llm,
