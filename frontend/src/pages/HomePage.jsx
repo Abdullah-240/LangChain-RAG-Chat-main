@@ -27,8 +27,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const apiBase = import.meta.env.VITE_API_BASE_URL || (isLocal ? "http://localhost:5000" : "https://langchain-rag-backend-4od8.onrender.com");
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "https://langchain-rag-backend-4od8.onrender.com";
       const res = await fetch(`${apiBase}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -47,7 +46,7 @@ export default function Chat() {
       const cites = Array.isArray(data.sources)
         ? [...new Set(data.sources)]
         : [];
-      const modelName = data.model_name ?? "GPT-4";
+      const modelName = data.model_name ?? "Google Gemini 3.5 Flash";
 
       for (let i = uiHistory.length - 1; i >= 0; i--) {
         if (uiHistory[i].role === "ai") {
@@ -60,14 +59,12 @@ export default function Chat() {
           break;
         }
       }
+
       setMessages(uiHistory);
     } catch (err) {
-      const isVercelNoBackend = !import.meta.env.VITE_API_BASE_URL && window.location.hostname.includes("vercel.app");
       let errorMsg = err.message || "Failed to reach backend server.";
-      if (isVercelNoBackend) {
-        errorMsg = "⚠️ **Vercel Backend Configuration Needed**:\n\nPlease add your Render backend URL in Vercel Environment Variables:\n- `VITE_API_BASE_URL` = `https://your-render-backend.onrender.com`";
-      } else if (err.name === "TypeError" || err.message.includes("fetch")) {
-        errorMsg = "⚠️ **Connection Error**: Unable to reach backend server. Make sure the Flask backend (`python main.py`) is running on `http://localhost:5000`.";
+      if (err.name === "TypeError" || err.message.includes("fetch")) {
+        errorMsg = "⚠️ **Connection Error**: Unable to reach backend server on `https://langchain-rag-backend-4od8.onrender.com`. Please check if the Render service is awake and active.";
       }
 
       setMessages((m) => [
